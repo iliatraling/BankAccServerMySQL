@@ -1,9 +1,9 @@
-package bankServer.bankAcc;
+package ConsoleAppv2;
 
 import java.sql.*;
 import java.util.Scanner;
 
-public class BankAccaunt {
+public class BankAcc {
     private int ID;
     private String NAME;
     private String LAST_NAME;
@@ -11,23 +11,11 @@ public class BankAccaunt {
     private Time START_T_BILL;
     private double BALANCE;
 
-    public BankAccaunt() {
+    public BankAcc() {
         ID = 0;
-        NAME = "Null";
-        LAST_NAME = "Null";
+        NAME = "Ivan";
+        LAST_NAME = "Ivanov";
         BALANCE = 0;
-        START_BILL = new Date(100, 9, 10);
-        START_T_BILL = new Time(13, 56, 48);
-
-    }
-
-    public BankAccaunt(int ID, String NAME, String LAST_NAME, Date START_BILL, Time START_T_BILL, double BALANCE) {
-        this.ID = ID;
-        this.NAME = NAME;
-        this.LAST_NAME = LAST_NAME;
-        this.START_BILL = START_BILL;
-        this.START_T_BILL = START_T_BILL;
-        this.BALANCE = BALANCE;
     }
 
     public int getID() {
@@ -62,20 +50,42 @@ public class BankAccaunt {
         this.BALANCE = BALANCE;
     }
 
-    public String convertToJson() {
-        StringBuffer sBuffer = new StringBuffer("{");
-        sBuffer.append("\"ID\": \"" + this.ID + "\",");
-        sBuffer.append("\"NAME\": \"" + this.NAME + "\",");
-        sBuffer.append("\"LAST_NAME\": \"" + this.LAST_NAME + "\",");
-        sBuffer.append("\"START_BILL\": \"" + this.START_BILL.toString() + "\",");
-        sBuffer.append("\"START_T_BILL\": \"" + this.START_T_BILL.toString() + "\",");
-        sBuffer.append("\"BALANCE\": \"" + String.valueOf(this.BALANCE) + "\"");
-        sBuffer.append("}");
-        return sBuffer.toString();
-    }
+    public void createAcc(Scanner sc, Connection connection) throws SQLException {
 
-    public void createAcc(Connection connection) throws SQLException {
-        System.out.println("creating Acc");
+
+        System.out.println("Enter ID:");
+
+        String s = "";
+
+        while (true) {
+            s = sc.next();
+            try {
+                ID = Integer.parseInt(s);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Enter integer number");
+            }
+        }
+        System.out.println("Enter Name:");
+        while (true) {
+            NAME = sc.next();
+            if (NAME.length() <= 10) {
+                break;
+            } else {
+                System.out.println("Enter name less than 11");
+            }
+        }
+        System.out.println("Enter Last Name:");
+        while (true) {
+            LAST_NAME = sc.next();
+            if (LAST_NAME.length() <= 10) {
+                break;
+            } else {
+                System.out.println("Enter last name less than 11");
+            }
+        }
+        BALANCE = 0;
+
         if (isExist(connection)) {
             System.out.println("The ID already exist");
             return;
@@ -94,7 +104,6 @@ public class BankAccaunt {
 
 
     }
-
     public void changeBalance(Connection connection, double money) {
         if (!isExist(connection)) {
             System.out.println("The ID does no exist");
@@ -104,7 +113,7 @@ public class BankAccaunt {
 
         getRow(connection);
 
-        if (BALANCE + money < 0) {
+        if(BALANCE + money < 0) {
             System.out.println("There is not enough money on your balance");
             return;
         }
@@ -119,63 +128,31 @@ public class BankAccaunt {
         }
     }
 
-    public void fromJSON(String json) {
-        System.out.println("start");
-        System.out.println(json);
-
-        // System.out.println(json.split("\"")[3] + "  "+ json.split("\"")[7] + "  "+ json.split("\"")[11] + "  "+ json.split("\"")[23]);
-
-        ID = Integer.parseInt(json.split("\"")[3]);
-        NAME = json.split("\"")[7];
-        BALANCE = Double.parseDouble(json.split("\"")[23]);
-        LAST_NAME = json.split("\"")[11];
-        //START_BILL = Date.valueOf(json.split("\"")[15]);
-        //START_T_BILL = Time.valueOf(json.split("\"")[19]);
-
-
-        //System.out.println(toString());
-    }
-
-    @Override
-    public String toString() {
-        return "BankAcc{" +
-                "ID=" + ID +
-                ", NAME='" + NAME + '\'' +
-                ", LAST_NAME='" + LAST_NAME + '\'' +
-                ", START_BILL=" + START_BILL +
-                ", START_T_BILL=" + START_T_BILL +
-                ", BALANCE=" + BALANCE +
-                '}';
-    }
-
-    @Deprecated
     public void withdrawMoney(Connection connection, double money) {
-        money = -money;
+    	money = -money;
         if (!isExist(connection)) {
             System.out.println("The ID does no exist");
             return;
         }
         getRow(connection);
 
-        if (BALANCE + money < 0) {
+        if(BALANCE + money < 0) {
             System.out.println("There is not enough money on your balance");
             return;
         }
 
 
         try (PreparedStatement ps = connection.prepareStatement("INSERT INTO bankacc.TRANSACT(ID,TRANSACTIONS) "
-                + " VALUES(?,?)");) {
+                +" VALUES(?,?)" );) {
             ps.setInt(1, ID);
             ps.setDouble(2, money);
             ps.executeUpdate();
             System.out.println("Debited from account: " + -money);
         } catch (SQLException e) {
-            System.out.println("exeption withdraw");
+            System.out.println("in showAcc");
             System.out.println(e.getErrorCode() + "   " + e.getSQLState());
         }
     }
-
-    @Deprecated
     public void addMoney(Connection connection, double money) {
         if (!isExist(connection)) {
             System.out.println("The ID does no exist");
@@ -183,13 +160,13 @@ public class BankAccaunt {
         }
 
         try (PreparedStatement ps = connection.prepareStatement("INSERT INTO bankacc.TRANSACT(ID,TRANSACTIONS) "
-                + " VALUES(?,?)");) {
+                +" VALUES(?,?)" );) {
             ps.setInt(1, ID);
             ps.setDouble(2, money);
             ps.executeUpdate();
             System.out.println("Balance replenished");
         } catch (SQLException e) {
-            System.out.println("exeption in showAcc");
+            System.out.println("in showAcc");
             System.out.println(e.getErrorCode() + "   " + e.getSQLState());
         }
     }
@@ -197,7 +174,6 @@ public class BankAccaunt {
     public boolean isExist(Connection connection) {
         int id = 0;
         ResultSet resultSet = null;
-        System.out.println("id is " + ID);
 
         try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM bankacc.bankacc WHERE  ID = ?;");) {
             ps.setInt(1, ID);
@@ -226,7 +202,7 @@ public class BankAccaunt {
 
     public void getRow(Connection connection) {
         ResultSet resultSet = null;
-        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM bankacc.BANKACC WHERE ID = ?");) {
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM bankacc.bankacc WHERE ID = ?");) {
             ps.setInt(1, ID);
             resultSet = ps.executeQuery();
 
@@ -259,7 +235,7 @@ public class BankAccaunt {
             return;
         }
 
-        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM bankacc.BANKACC WHERE ID = ?");) {
+        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM bankacc.bankacc WHERE ID = ?");) {
             ps.setInt(1, ID);
             ps.executeUpdate();
             System.out.println("Deletion completed successfully");
@@ -268,6 +244,35 @@ public class BankAccaunt {
             System.out.println("in showAcc");
             System.out.println(e.getErrorCode() + "   " + e.getSQLState());
         }
+    }
+
+    public void fromJSON(String json) {
+        String[] arr = json.split("\"");
+        System.out.println("start");
+
+        try {
+            ID = Integer.parseInt(json.split("\"")[3]);
+            NAME = json.split("\"")[7];
+            LAST_NAME = json.split("\"")[11];
+            START_BILL = Date.valueOf(json.split("\"")[15]);
+            START_T_BILL = Time.valueOf(json.split("\"")[19]);
+            BALANCE = Double.parseDouble(json.split("\"")[23]);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        System.out.println(toString());
+    }
+
+    @Override
+    public String toString() {
+        return "BankAcc{" +
+                "ID=" + ID +
+                ", NAME='" + NAME + '\'' +
+                ", LAST_NAME='" + LAST_NAME + '\'' +
+                ", START_BILL=" + START_BILL +
+                ", START_T_BILL=" + START_T_BILL +
+                ", BALANCE=" + BALANCE +
+                '}';
     }
 
     public void showAcc(Connection connection) throws SQLException {
@@ -282,3 +287,4 @@ public class BankAccaunt {
 
     }
 }
+

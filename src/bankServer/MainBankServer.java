@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+
 public class MainBankServer {
     public static void main(String[] args) {
         int choice = 0;
@@ -30,10 +31,9 @@ public class MainBankServer {
         }
 // Step 2: Opening database connection
         System.out.println("Hello");
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/mysql",
-                "root", "Ol4la1il7Ol4la1il7");
-        ) {
-
+        try {
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/mysql",
+                    "root", "Ol4la1il7Ol4la1il7");
             BankAcc ba = new BankAcc();
             ba.setID(200);
             ba.showAcc(connection);
